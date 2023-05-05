@@ -7,6 +7,37 @@ from vpowerconfig.powercfg import PowerCfg
 
 class TestPowerCfg:
 
+    @patch("vpowerconfig.powercfg.PowerCfg.get_powercfg_list")
+    def test_update(self, mock_get_powercfg_list):
+        mock_get_powercfg_list.return_value = [
+            (
+                "01234567-89ab-cdef-0123-456789abcdef",
+                "プランA",
+                False,
+            ),
+            (
+                "abcd1234-abcd-1234-abcd-1234abcdefab",
+                "プラン(B)",
+                True,
+            )
+        ]
+        powercfg = PowerCfg()
+        assert len(powercfg.configs) == 0
+        powercfg.update()
+        assert len(powercfg.configs) == 2
+        assert powercfg.configs == [
+            (
+                "01234567-89ab-cdef-0123-456789abcdef",
+                "プランA",
+                False,
+            ),
+            (
+                "abcd1234-abcd-1234-abcd-1234abcdefab",
+                "プラン(B)",
+                True,
+            )
+        ]
+
     @pytest.mark.parametrize("input_str, expected", [
         ("電源設定の GUID: 01234567-89ab-cdef-0123-456789abcdef  (プランA)", ("01234567-89ab-cdef-0123-456789abcdef", "プランA")), # noqa
         ("電源設定の GUID: abcd1234-abcd-1234-abcd-1234abcdefab  (プラン(B)) *", ("abcd1234-abcd-1234-abcd-1234abcdefab", "プラン(B)")), # noqa
@@ -29,9 +60,15 @@ class TestPowerCfg:
         result = PowerCfg.get_powercfg_list()
         assert isinstance(result, list)
         assert len(result) == 2
-
-        assert result[0].uuid == "01234567-89ab-cdef-0123-456789abcdef"
-        assert result[0].name == "プランA"
-
-        assert result[1].uuid == "abcd1234-abcd-1234-abcd-1234abcdefab"
-        assert result[1].name == "プラン(B)"
+        assert result == [
+            (
+                "01234567-89ab-cdef-0123-456789abcdef",
+                "プランA",
+                False,
+            ),
+            (
+                "abcd1234-abcd-1234-abcd-1234abcdefab",
+                "プラン(B)",
+                True,
+            )
+        ]
